@@ -1,0 +1,133 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<style>
+#log { font-size: 12px; color: gray; }
+</style>
+</head>
+
+<body>
+<div id="main">
+	<h1>使用canvas在前端压缩图片实例页面</h1>
+    <div id="body">
+    	<div id="effect" class="part">
+        	<h3>效果（400x400限制）：</h3>
+            <div class="show">
+            	<div class="demo">
+                	<p><input id="file" type="file" accept="image/gif, image/png, image/jpg, image/jpeg"></p>
+                    <p id="log"></p>
+                </div>
+            </div>
+        </div>     
+    </div>
+</div>
+
+<script>
+// 写log方法，演示辅助，与主逻辑无关
+var log = function (info) {
+	document.getElementById('log').innerHTML += (info + '<br>');	
+};
+
+var eleFile = document.querySelector('#file');
+
+if (window.FormData) {
+	// 压缩图片需要的一些元素和对象
+	var reader = new FileReader(), img = new Image();
+	
+	// 选择的文件对象
+	var file = null;
+	
+	// 缩放图片需要的canvas
+	var canvas = document.createElement('canvas');
+	var context = canvas.getContext('2d');
+	console.log(canvas,context);
+
+	// base64地址图片加载完毕后
+	img.onload = function () {
+		console.log(img);
+		console.log(img.width);
+		var h = 7;
+		var w = 17;
+		// var h = 5;
+		// var w = 6;
+
+		var marginWidth = 0;
+		var marginHeight = 0;
+		// 图片原始尺寸
+		var originWidth = this.width;
+		var originHeight = this.height;
+
+
+
+		if(originWidth >= (w*originHeight/h) ){
+			console.log(originWidth);
+			console.log(w*originHeight/h);
+			//当宽(y)比较大时，计算宽度，取w*originHeight/y
+			//取中心，计算侧边距离
+			marginWidth = (originWidth - (w*originHeight/h))/2;
+			var cropDistance = w*originHeight/h;
+			console.log(marginWidth);
+
+			canvas.width = cropDistance;
+			// canvas.width = originWidth; 
+			canvas.height = originHeight;
+			context.clearRect(0, 0, originWidth, originHeight);
+
+			console.log(marginWidth,cropDistance,originWidth,originHeight);
+			context.drawImage(img, marginWidth, 0, cropDistance, originHeight,0,0,originWidth,originHeight);
+
+			var imgtest = canvas.toDataURL();
+			console.log(imgtest);
+
+		}
+		if(originWidth < (w*originHeight/h) ){
+			console.log(originHeight);
+			console.log(h*originWidth/w);
+			//当高(x)比较大时，计算高度，取h*originHeight/w
+			//取中心，计算侧边距离
+			marginHeight = (originHeight - (h*originWidth/w))/2;
+			var cropDistance = h*originWidth/w;
+
+			canvas.width = originWidth;
+			canvas.height = cropDistance;
+			context.clearRect(0, 0, originWidth, originHeight);
+
+			console.log(marginHeight,cropDistance,originWidth,originHeight);
+			//context.drawImage(img, 0, marginHeight, originWidth, cropDistance);
+			context.drawImage(img, 0, marginHeight, originWidth, cropDistance,0,0,originWidth,originHeight);
+
+			var imgtest = canvas.toDataURL();
+			var imgf = new Image();
+			imgf.src = imgtest;
+			console.log(imgf);
+			console.log(typeof(imgf));
+		}
+		
+		
+		log('图片原尺寸是：' + [originWidth, originHeight].join('x'));
+	};
+	
+	// 文件base64化，以便获知图片原始尺寸
+	reader.onload = function(e) {
+		console.log(e);
+		// 图片尺寸
+		img.src = e.target.result;
+		console.log(img.width);
+	};
+	eleFile.addEventListener('change', function (event) {
+		file = event.target.files[0];
+		
+		if (file.type.indexOf("image") == 0) {
+			log('已选择图片'+ file.name +'，大小为'+ Math.round(1000 * file.size / (1024*1024)) / 1000 +'M。');
+
+			reader.readAsDataURL(file);	
+		} else {
+			log('选择的文件非图片，到此为止。');
+		}
+	});
+}
+</script>
+</body>
+</html>
